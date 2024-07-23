@@ -1,0 +1,12 @@
+*.gem
+*.rbc
+.bundle
+.config
+.yardoc
+
+Gemfile.lock
+Gemfile.local
+
+bin/
+
+.env
