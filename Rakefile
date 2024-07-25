@@ -46,14 +46,14 @@ namespace :recipe do
     dryrun_task_individual = "#{host}:recipe:dry-run"
     desc "Run itamae dry-run to [#{host}] for an indicidual package."
     task dryrun_task_individual, ["recipe", "option"] do | task, args |
-      sh "bundle exec itamae ssh -h #{host} -y './hosts/#{host}.yml' --log-level=#{log_level} ./recipe/#{args[:recipe]}/#{args[:option]}.rb --dry-run"
+      sh "bundle exec itamae ssh -h #{host} -y './hosts/#{host}.yml' --log-level=#{log_level} ./itamae/recipe/#{args[:recipe]}/#{args[:option]}.rb --dry-run"
     end
 
     # Run to install individual package.
     run_task_individual = "#{host}:recipe:run"
     desc "Run itamae run to [#{host}] for an indicidual package."
     task run_task_individual, ["recipe", "option"] do | task, args |
-      sh "bundle exec itamae ssh -h #{host} -y './hosts/#{host}.yml' --log-level=#{log_level} ./recipe/#{args[:recipe]}/#{args[:option]}.rb"
+      sh "bundle exec itamae ssh -h #{host} -y './hosts/#{host}.yml' --log-level=#{log_level} ./itamae/recipe/#{args[:recipe]}/#{args[:option]}.rb"
     end
 
   end
@@ -65,7 +65,7 @@ namespace :spec do
 
     RSpec::Core::RakeTask.new(host) do |task|
       ENV["TARGET_HOST"] = host
-      task.pattern = "./spec/unit/*_spec.rb"
+      task.pattern = "./itamae/spec/unit/*_spec.rb"
     end
 
     # Run serverspec to test for all packages.
@@ -74,7 +74,7 @@ namespace :spec do
     load_yml(host).keys do |key|
       task spec_target_all do |task|
         ENV["TARGET_HOST"] = host
-        sh "rspec ./spec/#{key}_spec.rb"
+        sh "rspec ./itamae/spec/#{key}_spec.rb"
       end
     end
 
@@ -83,7 +83,7 @@ namespace :spec do
     desc "Run serverspec run to [#{host}] for an indicidual package."
     task spec_target_individual, ["spec"] do |task, args|
       ENV["TARGET_HOST"] = host
-      sh "rspec ./spec/#{args[:spec]}_spec.rb"
+      sh "rspec ./itamae/spec/#{args[:spec]}_spec.rb"
     end
     
   end
