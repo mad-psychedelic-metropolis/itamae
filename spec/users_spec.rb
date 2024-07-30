@@ -1,5 +1,5 @@
 require 'dotenv'
-require 'helper/spec_helper'
+require './itamae/spec/helper/spec_helper'
 Dotenv.load
 
 users = node[:users]
