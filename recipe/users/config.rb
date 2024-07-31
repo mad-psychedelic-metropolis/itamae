@@ -2,34 +2,41 @@ require 'dotenv'
 Dotenv.load
 
 users = node[:users]
-
 abort("undefined error: node[:users]") if users.nil?
 
 users.each do |user| 
-  user "create user" do
+  username = user[:username]
+  uid = user[:uid]
+  passwd = user[:passwd]
+  ssh_pubkey = user[:passwd]
+  sudoers = user[:sudoers]
+  makedir_home = user[:makedir_home]
+
+  user "create_user_#{username}" do
     action :create
-    uid user[:uid]
-    username user[:username]
-    password "#{ENV["USER_1_PASSWORD"]}"
+    user "root"
+    uid uid
+    username username
+    password "#{password}".crypt("salt")
+    home "/home/#{username}"
   end
 
-  directory "/home/#{user[:username]}/.ssh" do
-    owner user[:username]
-    group user[:username]
-    mode "700"
-  end
-
-  file "/home/#{user[:username]}/.ssh/authorized_keys" do
-    content user[:sshkey]
-    owner user[:username]
-    group user[:username]
-    mode "600"
-  end
-
-  if user[:sudoers]
-    execute "add user to sudoers" do
+  if makedir_home
+    directory "/home/#{user[:username]}/.ssh" do
       user "root"
-      command "usermod -G wheel #{user[:username]}"
+      owner user[:username]
+      group user[:username]
+      mode "700"
+    end
+
+    file "/home/#{user[:username]}/.ssh/authorized_keys" do
+      user "root"
+      owner user[:username]
+      group user[:username]
+      mode "600"
+      content <<EOS
+ssh_pubkey
+EOS
     end
   end
 end
