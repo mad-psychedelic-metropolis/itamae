@@ -1,77 +1,112 @@
 # [![](https://raw.githubusercontent.com/itamae-kitchen/itamae-logos/master/small/FA-Itamae-horizontal-01-180x72.png)](https://github.com/itamae-kitchen/itamae)
 
-### ブログ構築&運用
+### Itamae
 
 #### 概要
 
-- 運用監視に関わるあらゆる機能を自らの手で構築していくためのプロジェクト。
-  - WordPress、監視機能、ログ転送機能、DB 冗長構成 ...etc
-  - Linux と Ruby に関する知見を増やすことを目的とした。
+- サーバーの運用監視に関わるあらゆる機能を自らの手で構築していくために、必要なレシピ・テストコードを管理する。
 
-#### 環境の準備
+#### 事前準備
 
-1. ホスト上の仮想マシンで構築したい場合、VirtualBox と Vagrant を導入する。
-1. `vagrant`リポジトリより、仮想マシンを構築する準備を整える。
-1. 仮想マシンに SSH でアクセスできることを確認する。
+- ホスティングサービスの契約、もしくはローカル環境にて仮想環境を構築する。(割愛)
+- Itamae を実行する環境から SSH で、対象のサーバーにアクセスできるかを確認する。(割愛)
+- Itamae を実行する環境で Ruby を動作させる。(1 章)
+- 環境ごとのリポジトリを作成する。(2 章)
+- 必要な秘匿情報（パスワードや鍵の準備など）を準備しておく。(3 章)
 
-#### Itamae の準備
+##### 1. Ruby の導入
+
+- Ruby の動作を確認する。
 
 ```
-$ git clone git@gitlab.com:bay1998/hacluster-chef.git
 $ asdf current ruby
-ruby            3.x.x           /Users/masaya/.tool-versions
-# 3.x.x以上だと問題なく動作するだろう。
+ruby            3.x.x           .tool-versions
+# 3.x.x以上だと問題なく動作する。
+```
 
-$ cd itamae
-$ bundle install
-$ cp -i nodes/tmpplate.yml nodes/node1.yml
+##### 2.リポジトリの整備
 
-# 対象ホストの特性に合うように、パラメータを変更する。
-$ vim node1.yml
+- プロジェクト用のリポジトリを作成する。
+  - 参考: [Wordpress ブログ用リポジトリ](https://github.com/mad-psychedelic-metropolis/wordpress-blog)
 
-general:
-  - hostname: node1
-    ip_address: 127.0.0.1
-    port: 22221
+```
+$ git clone [作成したリポジトリのURL] && [作成しリポジトリ名]
+$ git checkout -b issue/0
+$ git submodule add https://github.com/mad-psychedelic-metropolis/itamae itamae
+$ cp -i itamae/Gemfile .
+$ cp -i itamae/Rakefile .
+$ mkdir hosts && cp -i itamae/hosts/template.yml hosts/[SSHでログインでいるホスト名].yml
+$ vi hosts/[SSHでログインでいるホスト名].yml      # 設定したい値に変更する
+$ bundle install      # Gemfileの中身に沿ってインストールされ、Gemfile.lockが生成される
+$ git add ../[作成しリポジトリ名]
+$ git commit -m "Itamae管理のリポジトリの環境を整備した #0"
+$ git push origin HEAD
+```
 
-user:
-  - uid: 1001
-    username: bay1998
+##### 3. 秘匿情報を管理するファイルを作成
 
-# 秘匿情報を管理するファイルを作成する。
-$ cp -i template.env .env
-MAIN_USER_PASSWORD=(各自で設定が必要。下記参照)
+```
+$ cd [作成しリポジトリ名]
+$ cp -i itamae/template.env .env
+$ vi .env     # 設定したい値に変更する
+```
 
+#### 実行コマンドを確認
+
+- Itamae を実行するコマンドを確認する
+  - ① 設定値に問題ないかを確認する Dry-run
+  - ② サーバーに設定を反映させる Run
+  - ③ サーバーの設定が正しく入っているかを確認する Spec
+
+```
 $ bundle exec rake -T
-rake recipe:node1:dry-run                        # Run itamae dry-run to [node1] for all p...
-rake recipe:node1:recipe:dry-run[recipe,option]  # Run itamae dry-run to [node1] for an in...
-rake recipe:node1:recipe:run[recipe,option]      # Run itamae run to [node1] for an indici...
-rake recipe:node1:run                            # Run itamae run to [node1] for all packages
-rake spec:node1                                  # Run RSpec code examples
-rake spec:node1:target[spec]                     # Run serverspec run to [node1] for an in...
+
+# ①Dry-run
+# 全てのレシピ
+rake recipe:[SSHでログインでいるホスト名]:dry-run
+# 特定のレシピを指定
+rake recipe:[SSHでログインでいるホスト名]:recipe:dry-run'[recipe,option]'
+
+# ②Run
+# 全てのレシピ
+rake recipe:node1:run
+# 特定のレシピを指定
+rake recipe:node1:recipe:run'[recipe,option]'
+
+# ③Spec
+# 全てのレシピ
+rake spec:node1
+# 特定のレシピを指定
+rake spec:node1:target'[spec]'
 ```
 
-#### Itamae の実行方法
+#### 実行
 
-- `bundle exec rake -T`で実行したコマンドを用途ごとに使い分ける。
+- 特定のレシピを実行する場合
 
 ```
-# node1にて、設定した全ての項目を実行テスト
+
+# node1 にて、設定した全ての項目を実行テスト
+
 $ bundle exec rake recipe:node1:dry-run
 
-# node1にて、指定した項目を実行テスト
+# node1 にて、指定した項目を実行テスト
+
 $ bundle exec rake recipe:node1:recipe:dry-run[recipe,option] ## Linux
 $ bundle exec rake recipe:node1:recipe:dry-run'[recipe,option]' ## Mac
 
-# node1にて、設定した全ての項目を実行テスト
+# node1 にて、設定した全ての項目を実行テスト
+
 $ bundle exec rake recipe:node1:run
 
-# node1にて、指定した項目を実行テスト
+# node1 にて、指定した項目を実行テスト
+
 $ bundle exec rake recipe:node1:recipe:run[recipe,option] ## Linux
 $ bundle exec rake recipe:node1:recipe:run'[recipe,option]' ## Mac
 
 recipe = [ `ls recipe` で出力される項目が対象 ]
 option = [ 基本`default`。インストールだけしたい場合は、`install` ]
+
 ```
 
 #### Serverspec の実行方法
@@ -79,14 +114,18 @@ option = [ 基本`default`。インストールだけしたい場合は、`insta
 - `bundle exec rake -T`で実行したコマンドを用途ごとに使い分ける。
 
 ```
-# node1にて、設定した全ての項目をテスト
+
+# node1 にて、設定した全ての項目をテスト
+
 $ bundle exec rake spec:node1
 
-# node1にて、指定した項目を実行テスト
-$ bundle exec rake spec:node1:target[spec]   ## Linux
-$ bundle exec rake spec:node1:target'[spec]'  ## Mac
+# node1 にて、指定した項目を実行テスト
+
+$ bundle exec rake spec:node1:target[spec] ## Linux
+$ bundle exec rake spec:node1:target'[spec]' ## Mac
 
 spec = [ `ls spec` で出力される `*_spec.rb` の項目が対象 ]
+
 ```
 
 #### .env で必要な項目
@@ -97,3 +136,15 @@ spec = [ `ls spec` で出力される `*_spec.rb` の項目が対象 ]
 | DB_ROOT_PASSWORD | MySQL Root ユーザーに設定するパスワード                               |      |
 | DB_0_PASSWORD    | MySQL ユーザー No.0(monitor/閲覧用ユーザー)に設定するパスワード       |      |
 | DB_1_PASSWORD    | MySQL ユーザー No.1(wp_user/Wordpress 用ユーザー)に設定するパスワード |      |
+
+```
+
+```
+
+```
+
+```
+
+```
+
+```
