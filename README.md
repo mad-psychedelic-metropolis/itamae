@@ -51,6 +51,13 @@ $ cp -i itamae/template.env .env
 $ vi .env     # 設定したい値に変更する
 ```
 
+##### .env で必要な項目
+
+| パラメータ              | 値の説明                                    | 値の例考             |
+| ----------------------- | ------------------------------------------- | -------------------- |
+| USER\_{uid}\_SSH_PUBLIC | サーバーに設定するユーザーごとの SSH 公開鍵 | USER_1013_SSH_PUBLIC |
+| USER\_{uid}\_PASSWORD   | ユーザーのパスワード                        | USER_1013_PASSWORD   |
+
 #### 実行コマンドを確認と紹介
 
 - Itamae を実行するコマンドを確認する
@@ -120,10 +127,3 @@ $ bundle exec rake spec:node1:target'[spec]' ## Mac
 # 例えば....recipe =「mysql_spec.rb」
 $ bundle exec rake spec:node1:target[mysql] ## Linux
 ```
-
-#### .env で必要な項目
-
-| パラメータ              | 値の説明                                    | 値の例考             |
-| ----------------------- | ------------------------------------------- | -------------------- |
-| USER\_{uid}\_SSH_PUBLIC | サーバーに設定するユーザーごとの SSH 公開鍵 | USER_1013_SSH_PUBLIC |
-| USER\_{uid}\_PASSWORD   | ユーザーのパスワード                        | USER_1013_PASSWORD   |
