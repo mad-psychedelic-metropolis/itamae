@@ -51,7 +51,7 @@ $ cp -i itamae/template.env .env
 $ vi .env     # 設定したい値に変更する
 ```
 
-#### 実行コマンドを確認
+#### 実行コマンドを確認と紹介
 
 - Itamae を実行するコマンドを確認する
   - ① 設定値に問題ないかを確認する Dry-run
@@ -65,86 +65,65 @@ $ bundle exec rake -T
 # 全てのレシピ
 rake recipe:[SSHでログインでいるホスト名]:dry-run
 # 特定のレシピを指定
-rake recipe:[SSHでログインでいるホスト名]:recipe:dry-run'[recipe,option]'
+rake recipe:[SSHでログインでいるホスト名]:recipe:dry-run[recipe,option]
 
 # ②Run
 # 全てのレシピ
 rake recipe:node1:run
 # 特定のレシピを指定
-rake recipe:node1:recipe:run'[recipe,option]'
+rake recipe:node1:recipe:run[recipe,option]
 
 # ③Spec
 # 全てのレシピ
 rake spec:node1
 # 特定のレシピを指定
-rake spec:node1:target'[spec]'
+rake spec:node1:target[spec]
 ```
 
-#### 実行
-
-- 特定のレシピを実行する場合
-
-```
-
-# node1 にて、設定した全ての項目を実行テスト
-
-$ bundle exec rake recipe:node1:dry-run
-
-# node1 にて、指定した項目を実行テスト
-
-$ bundle exec rake recipe:node1:recipe:dry-run[recipe,option] ## Linux
-$ bundle exec rake recipe:node1:recipe:dry-run'[recipe,option]' ## Mac
-
-# node1 にて、設定した全ての項目を実行テスト
-
-$ bundle exec rake recipe:node1:run
-
-# node1 にて、指定した項目を実行テスト
-
-$ bundle exec rake recipe:node1:recipe:run[recipe,option] ## Linux
-$ bundle exec rake recipe:node1:recipe:run'[recipe,option]' ## Mac
-
-recipe = [ `ls recipe` で出力される項目が対象 ]
-option = [ 基本`default`。インストールだけしたい場合は、`install` ]
-
-```
-
-#### Serverspec の実行方法
+#### Itamae のレシピを実行
 
 - `bundle exec rake -T`で実行したコマンドを用途ごとに使い分ける。
 
 ```
+# node1 にて、設定した全ての項目を実行テスト
+$ bundle exec rake recipe:node1:run
 
+# node1 にて、指定した項目を実行テスト
+$ bundle exec rake recipe:node1:recipe:dry-run[recipe,option] ## Linux
+$ bundle exec rake recipe:node1:recipe:dry-run'[recipe,option]' ## Mac
+
+# 例えば....recipe =「mysql」/ option = 「install.rb」のみ実行したい場合
+$ bundle exec rake recipe:node1:recipe:dry-run[mysql,install] ## Linux
+
+# 例えば....recipe =「mysql」の全てを実行したい場合
+$ bundle exec rake recipe:node1:recipe:dry-run[mysql,default] ## Linux
+```
+
+#### 対象の レシピ一覧
+
+| レシピ | レシピの説明                                         | 備考 |
+| ------ | ---------------------------------------------------- | ---- |
+| users  | ユーザーの作成及び管理/ユーザーごとの SSH 設定を管理 |      |
+
+#### Serverspec を実行
+
+- `bundle exec rake -T`で実行したコマンドを用途ごとに使い分ける。
+
+```
 # node1 にて、設定した全ての項目をテスト
-
 $ bundle exec rake spec:node1
 
 # node1 にて、指定した項目を実行テスト
-
 $ bundle exec rake spec:node1:target[spec] ## Linux
 $ bundle exec rake spec:node1:target'[spec]' ## Mac
 
-spec = [ `ls spec` で出力される `*_spec.rb` の項目が対象 ]
-
+# 例えば....recipe =「mysql_spec.rb」
+$ bundle exec rake spec:node1:target[mysql] ## Linux
 ```
 
 #### .env で必要な項目
 
-| パラメータ       | 値の説明                                                              | 備考 |
-| ---------------- | --------------------------------------------------------------------- | ---- |
-| USER_1_PASSWORD  | ユーザーに設定するパスワード(SHA-512 で暗号化)                        |      |
-| DB_ROOT_PASSWORD | MySQL Root ユーザーに設定するパスワード                               |      |
-| DB_0_PASSWORD    | MySQL ユーザー No.0(monitor/閲覧用ユーザー)に設定するパスワード       |      |
-| DB_1_PASSWORD    | MySQL ユーザー No.1(wp_user/Wordpress 用ユーザー)に設定するパスワード |      |
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
+| パラメータ              | 値の説明                                    | 値の例考             |
+| ----------------------- | ------------------------------------------- | -------------------- |
+| USER\_{uid}\_SSH_PUBLIC | サーバーに設定するユーザーごとの SSH 公開鍵 | USER_1013_SSH_PUBLIC |
+| USER\_{uid}\_PASSWORD   | ユーザーのパスワード                        | USER_1013_PASSWORD   |
