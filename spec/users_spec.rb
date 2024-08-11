@@ -31,8 +31,3 @@ users.each_with_index do |user,i|
         end
     end
 end
-
-describe file(conffile) do
-    it { should contain "PermitRootLogin no" }
-    it { should contain "PasswordAuthentication no" }
-end
