@@ -7,8 +7,8 @@ abort("undefined error: node[:users]") if users.nil?
 users.each do |user| 
   username = user[:username]
   uid = user[:uid]
-  passwd = user[:passwd]
-  ssh_pubkey = user[:passwd]
+  passwd = ENV["USER_#{uid}_PASSWORD"]
+  ssh_pubkey = ENV["USER_#{uid}_SSH_PUBLIC"]
   sudoers = user[:sudoers]
   makedir_home = user[:makedir_home]
 
@@ -17,7 +17,7 @@ users.each do |user|
     user "root"
     uid uid
     username username
-    password "#{password}".crypt("salt")
+    password passwd.crypt("salt")
     home "/home/#{username}"
   end
 
