@@ -17,6 +17,14 @@ users.each_with_index do |user,i|
         it { should have_authorized_key user[:sshkey] }
         its(:encrypted_password) { should match("#{password}") }
     end
+
+    if sudoers
+        describe command("sudo su - -c 'whoami'") do
+            let(:sudo_options) { "-u #{username} -i"}
+            its(:exit_status) { should eq 0 }
+            its(:stdout) { should match /^root$/ }
+        end
+    end
 end
 
 describe file(conffile) do

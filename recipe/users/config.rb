@@ -34,9 +34,20 @@ users.each do |user|
       owner user[:username]
       group user[:username]
       mode "600"
-      content <<EOS
-ssh_pubkey
-EOS
+      content ssh_pubkey
+    end
+  end
+
+  if sudoers
+    sudo_config = "Defaults:#{username} !requiretty\n"
+    sudo_config << "%#{username} ALL=(ALL) NOPASSWD: ALL"
+
+    file "/etc/sudoers.d/#{username}" do
+      action :create
+      mode   "440"
+      owner  "root"
+      group  "root"
+      content sudo_config
     end
   end
 end
