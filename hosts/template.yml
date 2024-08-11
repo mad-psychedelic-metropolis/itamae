@@ -1,7 +1,5 @@
 users:
   - uid: 1013
-    username: okboy2
-    ssh_public_key: <%= ENV["USER_1013_SSH_PUBLIC"] %>
-    password: <%= ENV["USER_1013_PASSWORD"] %>
+    username: okboy
     sudoers: true
     makedir_home: true
