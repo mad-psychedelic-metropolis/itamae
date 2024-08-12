@@ -1,5 +1,23 @@
+general:
+  domain: &domain "xxxxx.com"
+  public: &wp_path "/var/www/public/wordpress"
+
 users:
   - uid: 1013
     username: okboy
     sudoers: true
     makedir_home: true
+
+ssl:
+  ssl_enable: &ssl_enable false
+  public: *wp_path
+  domain: *domain
+
+nginx:
+  version: "1:1.20.1-14.el9_2.1.alma.1"
+  config:
+    process: 5
+    connection: 1024
+    ssl_enable: *ssl_enable
+    wordpress:
+      enable: false

@@ -1,0 +1,109 @@
+<%- config = node[:nginx][:config] -%>
+<%- general = node[:general] -%>
+
+user nginx;
+worker_processes <%= config[:process] %>;
+
+error_log /var/log/nginx/error.log;
+pid /var/run/nginx.pid;
+
+# Load dynamic modules. See /usr/share/doc/nginx/README.dynamic.
+include /usr/share/nginx/modules/*.conf;
+
+events {
+  worker_connections <%= config[:connection] %>;
+}
+
+http {
+  log_format  main  escape=json '{"time":"$time_local",'
+                                '"forwarded_for":"$http_x_forwarded_for",'
+                                '"client":"$remote_addr": "$remote_user",'
+                                '"status":"$status",'
+                                '"request":"$request",'
+                                '"referer":"$http_referer",'
+                                '"request_body":"$request_body",'
+                                '"body_bytes_sent":"$body_bytes_sent",'
+                                '"user_agent":"$http_user_agent",'
+                                '"authorization":"$http_authorization"}';
+
+  access_log  /var/log/nginx/access.log  main;
+
+  sendfile            on;
+  tcp_nopush          on;
+  tcp_nodelay         on;
+  keepalive_timeout   65;
+  types_hash_max_size 4096;
+
+  include  /etc/nginx/mime.types;
+  include  /etc/nginx/conf.d/*.conf;
+  default_type  application/octet-stream;
+
+  <%- if config[:ssl_enable] -%>
+  server {
+    listen 80;
+    return 301 https://$host$request_uri;
+  }
+  <%- end -%>
+
+  server {
+    <%- if config[:ssl_enable] -%>
+    listen 443 ssl;
+    <%- else -%>
+    listen 80;
+    <%- end -%>
+
+    <%- if config[:ssl_enable] -%>
+    ssl_certificate /etc/letsencrypt/live/<%= general[:domain] %>/fullchain.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/<%= general[:domain] %>/chain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/<%= general[:domain] %>/privkey.pem;
+    <%- end -%>
+
+    server_name localhost;
+    index index.php;
+    <%- if config[:wordpress][:enable] -%>
+    root <%= config[:wordpress][:wp_path] %>;
+    <%- else -%>
+    root /var/www/public;
+    <%- end -%>
+
+    include /etc/nginx/default.d/*.conf;
+
+    location / {
+      index index.php index.html index.htm;
+      try_files $uri $uri/ /index.php?$args;
+    }
+
+    <%- if config[:ssl_enable] -%>
+    location ^~ /.well-known/acme-challenge/ {
+      default_type "text/plain";
+      root         <%= geberal[:public] %>;
+    }
+    <%- end -%>
+
+    location = /.well-known/acme-challenge/ {
+        return 404;
+    }
+
+    location ~* /wp-config.php { 
+      deny all;
+    }
+
+    location ~ [^/]\.php(/|$) {
+      try_files $uri @wordpress;
+      fastcgi_pass unix:/run/php-fpm/www.sock;
+      fastcgi_index index.php;
+      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      include fastcgi_params;
+      fastcgi_buffers 16 16k;
+      fastcgi_buffer_size 32k;
+    }
+
+    error_page 404 /404.html;
+    location = /40x.html{}
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {}
+  }
+
+}
+
