@@ -2,34 +2,52 @@ require 'dotenv'
 Dotenv.load
 
 users = node[:users]
-
 abort("undefined error: node[:users]") if users.nil?
 
 users.each do |user| 
-  user "create user" do
+  username = user[:username]
+  uid = user[:uid]
+  passwd = ENV["USER_#{uid}_PASSWORD"]
+  ssh_pubkey = ENV["USER_#{uid}_SSH_PUBLIC"]
+  sudoers = user[:sudoers]
+  makedir_home = user[:makedir_home]
+
+  user "create_user_#{username}" do
     action :create
-    uid user[:uid]
-    username user[:username]
-    password "#{ENV["USER_1_PASSWORD"]}"
+    user "root"
+    uid uid
+    username username
+    password passwd.crypt("salt")
+    home "/home/#{username}"
   end
 
-  directory "/home/#{user[:username]}/.ssh" do
-    owner user[:username]
-    group user[:username]
-    mode "700"
-  end
-
-  file "/home/#{user[:username]}/.ssh/authorized_keys" do
-    content user[:sshkey]
-    owner user[:username]
-    group user[:username]
-    mode "600"
-  end
-
-  if user[:sudoers]
-    execute "add user to sudoers" do
+  if makedir_home
+    directory "/home/#{user[:username]}/.ssh" do
       user "root"
-      command "usermod -G wheel #{user[:username]}"
+      owner user[:username]
+      group user[:username]
+      mode "700"
+    end
+
+    file "/home/#{user[:username]}/.ssh/authorized_keys" do
+      user "root"
+      owner user[:username]
+      group user[:username]
+      mode "600"
+      content ssh_pubkey
+    end
+  end
+
+  if sudoers
+    sudo_config = "Defaults:#{username} !requiretty\n"
+    sudo_config << "%#{username} ALL=(ALL) NOPASSWD: ALL"
+
+    file "/etc/sudoers.d/#{username}" do
+      action :create
+      mode   "440"
+      owner  "root"
+      group  "root"
+      content sudo_config
     end
   end
 end
