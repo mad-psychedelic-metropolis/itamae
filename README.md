@@ -112,6 +112,7 @@ $ bundle exec rake recipe:node1:recipe:dry-run[mysql,default] ## Linux
 | ------ | ---------------------------------------------------- | ---- |
 | users  | ユーザーの作成及び管理/ユーザーごとの SSH 設定を管理 |      |
 | nginx  | Nginx 設定を管理                                     |      |
+| php    | PHP 設定を管理                                       |      |
 
 #### Serverspec を実行
 
