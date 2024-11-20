@@ -18,7 +18,7 @@ end
 
 execute "mysql-create-user" do
     user "root"
-    command "mysql -u root --password='#{ENV["DB_ROOT_PASSWORD"]}' < #{sql_path}"
+    command "mysql -uroot -p'#{ENV["DB_ROOT_PASSWORD"]}' < #{sql_path}"
     action :nothing
 end
 
