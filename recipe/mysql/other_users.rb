@@ -10,7 +10,7 @@ template sql_path do
     owner "root"
     group "root"
     mode "0600"
-    source "template#{sql_path}.erb"
+    source "templates#{sql_path}.erb"
     variables(users: users, passwords: passwords)
     notifies :run, "execute[mysql-create-user]", :immediately
     notifies :run, "execute[delete-grants_sql]", :immediately

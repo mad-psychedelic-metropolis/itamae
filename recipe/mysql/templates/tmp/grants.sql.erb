@@ -1,5 +1,5 @@
 <% @users.each_with_index do |user, i| %>
-DROP USER '<%= user["user"] %>';
+DROP USER IF EXISTS <%= user["user"] %>;
 CREATE USER '<%= user["user"] %>'@'%' IDENTIFIED BY '<%= @passwords[i] %>';
 GRANT <%= user["action"] %> ON <%= user["db"] %> TO '<%= user["user"] %>'@'%';
 <% end %>
