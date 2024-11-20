@@ -4,7 +4,7 @@ general:
 
 users:
   - uid: 1013
-    username: okboy
+    username: user
     sudoers: true
     makedir_home: true
 
@@ -26,3 +26,18 @@ nginx:
     ssl_enable: *ssl_enable
     wordpress:
       enable: false
+
+mysql:
+  version: "8.4.2-1.el9"
+  packages:
+    - mysql-community-client
+    - mysql-community-server
+  databases:
+    - "wordpress"
+  users:
+    - user: "monitor"
+      db: "*.*"
+      action: "SELECT"
+    - user: &db_wpuser "wp_user"
+      db: "wordpress.*"
+      action: "ALL"
