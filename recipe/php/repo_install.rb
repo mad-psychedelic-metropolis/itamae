@@ -1,6 +1,7 @@
 platform_version = node[:general][:platform_version]
 
 package "epel-release" do
+    action :install
     not_if 'rpm -q epel-release'
 end
 
