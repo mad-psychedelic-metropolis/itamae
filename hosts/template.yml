@@ -8,6 +8,9 @@ users:
     sudoers: true
     makedir_home: true
 
+hostname:
+  name: hostname
+
 ssl:
   ssl_enable: &ssl_enable false
   public: *wp_path
